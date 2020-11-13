@@ -13,19 +13,31 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Archivos de recursos\ex_1">
+      <UniqueIdentifier>{07a0b310-8ace-4b98-bb05-042725230d2e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archivos de recursos\ex_2">
+      <UniqueIdentifier>{bcfabc40-b2ab-43ec-b98b-5338eaa37298}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archivos de recursos\ex_3">
+      <UniqueIdentifier>{93ba42a7-6ca1-4b0b-91e9-0c7295a2d354}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archivos de recursos\ex_bonus">
+      <UniqueIdentifier>{88200fa6-a14d-4a82-beaa-e10c5bc1d1d1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="exercise_1.cu">
-      <Filter>Archivos de recursos</Filter>
+      <Filter>Archivos de recursos\ex_1</Filter>
     </CudaCompile>
     <CudaCompile Include="exercise_2.cu">
-      <Filter>Archivos de recursos</Filter>
+      <Filter>Archivos de recursos\ex_2</Filter>
     </CudaCompile>
     <CudaCompile Include="exercise_3.cu">
-      <Filter>Archivos de recursos</Filter>
+      <Filter>Archivos de recursos\ex_3</Filter>
     </CudaCompile>
     <CudaCompile Include="bonus_exercise.cu">
-      <Filter>Archivos de recursos</Filter>
+      <Filter>Archivos de recursos\ex_bonus</Filter>
     </CudaCompile>
   </ItemGroup>
 </Project>
