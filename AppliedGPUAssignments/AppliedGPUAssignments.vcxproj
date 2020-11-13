@@ -149,7 +149,10 @@
     </CudaCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <CudaCompile Include="bonus_exercise.cu" />
     <CudaCompile Include="exercise_1.cu" />
+    <CudaCompile Include="exercise_2.cu" />
+    <CudaCompile Include="exercise_3.cu" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

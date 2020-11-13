@@ -18,5 +18,14 @@
     <CudaCompile Include="exercise_1.cu">
       <Filter>Archivos de recursos</Filter>
     </CudaCompile>
+    <CudaCompile Include="exercise_2.cu">
+      <Filter>Archivos de recursos</Filter>
+    </CudaCompile>
+    <CudaCompile Include="exercise_3.cu">
+      <Filter>Archivos de recursos</Filter>
+    </CudaCompile>
+    <CudaCompile Include="bonus_exercise.cu">
+      <Filter>Archivos de recursos</Filter>
+    </CudaCompile>
   </ItemGroup>
 </Project>

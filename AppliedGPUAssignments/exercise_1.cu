@@ -1,7 +1,9 @@
+#pragma once
+
 #include <stdio.h>
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
-#define N 256
+#define NUM_PARTICLES 256
 #define TPB 256
 
 /* After checking in many different forums, we have discovered that for some reason
@@ -37,13 +39,13 @@ __global__ void kernelPrint(int len)
 
 }
 
-int main()
+int mainExcercise1()
 { 
     
 	printf("\n Let´s go printing! \n");
 
 	// Launch kernel to print hello worlds with Ids
-	kernelPrint KERNEL_ARGS2(N/TPB,TPB)(N);
+	kernelPrint KERNEL_ARGS2(NUM_PARTICLES/TPB,TPB)(NUM_PARTICLES);
 
 	// We wait for the GPU
 	cudaDeviceSynchronize();
