@@ -26,8 +26,8 @@
 #define KERNEL_ARGS4(grid, block, sh_mem, stream)
 #endif
 
-#define TPB 512
-#define NUM_PARTICLES 10000000
+#define TPB 1024
+#define NUM_PARTICLES 100000
 #define NUM_ITERATIONS 1000
 
 struct Particle
@@ -65,9 +65,9 @@ void cpuParticlesUpdate(Particle* particleArray)
 		float dt = 1;
 
 		// Velocity update
-		particleArray[i].velocity.x *= 0.5 * i;
-		particleArray[i].velocity.y *= 2 * i;
-		particleArray[i].velocity.z *= 0.75 * i;
+		particleArray[i].velocity.x *= (float) 0.5 * i;
+		particleArray[i].velocity.y *= (float)2 * i;
+		particleArray[i].velocity.z *= (float) 0.75 * i;
 
 		// Position update 
 		particleArray[i].position.x += particleArray[i].velocity.x * dt;
@@ -154,7 +154,7 @@ int main()
 
 	cudaMemcpy(d_particleArray, particleArray, NUM_PARTICLES * sizeof(Particle), cudaMemcpyHostToDevice);
 
-	// Let's measuare the time
+	// Let's measure the time
 	struct timeval tStart;
 	struct timeval tEnd;
 

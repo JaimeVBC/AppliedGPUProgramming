@@ -1,12 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdint.h>
-#include <string.h>
 #include <math.h>
 #include <time.h>
 #include <curand.h>
 #include <curand_kernel.h>
 #include <device_launch_parameters.h>
+#include <Windows.h>
 
 #define SEED 921
 
@@ -28,7 +27,7 @@ __global__ void kernelMonteCarlo(curandState *states, int *d_count, int num_iter
     int id = threadIdx.x + blockDim.x * blockIdx.x;
     if (id < num_threads)
     {
-        double x, y, z;
+        float x, y, z;
 
         int seed = id; // different seed per thread
         curand_init(seed, id, 0, &states[id]); // Initialize CURAND
@@ -47,18 +46,49 @@ __global__ void kernelMonteCarlo(curandState *states, int *d_count, int num_iter
     }
 }
 
+int gettimeofday(struct timeval* tv, struct timezone* tz)
+{
+    static LONGLONG birthunixhnsec = 116444736000000000;  /*in units of 100 ns */
+
+    FILETIME systemtime;
+    GetSystemTimeAsFileTime(&systemtime);
+
+    ULARGE_INTEGER utime;
+    utime.LowPart = systemtime.dwLowDateTime;
+    utime.HighPart = systemtime.dwHighDateTime;
+
+    ULARGE_INTEGER birthunix;
+    birthunix.LowPart = (DWORD)birthunixhnsec;
+    birthunix.HighPart = birthunixhnsec >> 32;
+
+    LONGLONG usecs;
+    usecs = (LONGLONG)((utime.QuadPart - birthunix.QuadPart) / 10);
+
+    tv->tv_sec = (long long)(usecs / 1000000);
+    tv->tv_usec = (long long)(usecs % 1000000);
+
+    return 0;
+}
 
 int main(int argc, char* argv[])
 {
     printf("\nLet´s run bonus exercise! \n\n");
-    int NUM_ITER = 16384*16;
+    int num_iter = 262144;
+    //int num_iter = 65536;
+    //int num_iter = 16384;
+    //int num_iter = 4096;
+    //int num_iter = 1024;
+
     float pi = 0.0f;
     int num_iter_per_thread = 32;
-    int num_blocks = (NUM_ITER + TPB - 1)/TPB;
+    int num_blocks = (num_iter + TPB - 1)/TPB;
     int num_threads = TPB * num_blocks / num_iter_per_thread;
     
+    // Let's measure the time
+    struct timeval tStart;
+    struct timeval tEnd;
     
-    printf("\nNUM_ITER:  %d ", NUM_ITER);
+    printf("\nNUM_ITER:  %d ", num_iter);
     printf("\nNumIterPerThread:  %d ", num_iter_per_thread);
     printf("\nNumThreads:  %d ", num_threads);
     printf("\nThreads per block:  %d ", TPB);
@@ -76,8 +106,18 @@ int main(int argc, char* argv[])
     counts = (int*) malloc(num_threads * sizeof(int));
     if (counts == NULL) { printf("ERROR! Failure when allocating dynamic memory"); return 1; }
 
+    // We start the timer
+    gettimeofday(&tStart, NULL);
+
     kernelMonteCarlo KERNEL_ARGS2((num_threads+TPB-1)/TPB, TPB)(dev_random, d_counts, num_iter_per_thread,num_threads);
     cudaDeviceSynchronize();
+
+    // We stop the timer...
+    gettimeofday(&tEnd, NULL);
+
+    // And finally print the timer
+    printf("GPU Monte Carlo algorithm completed in %3.10f miliseconds \n", ((tEnd.tv_sec - tStart.tv_sec) * 1000000.0 + (tEnd.tv_usec - tStart.tv_usec)) / 1000.0);
+
     cudaMemcpy(counts, d_counts, num_threads * sizeof(int), cudaMemcpyDeviceToHost);
 
 
@@ -93,7 +133,7 @@ int main(int argc, char* argv[])
         printf("accumulate_count vale: %d\n\n", accumulate_count);*/
         accumulate_count += counts[i];
     }
-    pi = (float) accumulate_count / NUM_ITER * 4;
+    pi = 4.0f * (float)accumulate_count / (float)num_iter;
 
     printf("The approximate result of PI is: %lf\n", pi);
 
@@ -105,3 +145,5 @@ int main(int argc, char* argv[])
 
     return 0;
 }
+
+
