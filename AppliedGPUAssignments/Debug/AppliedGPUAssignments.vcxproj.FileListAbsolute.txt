@@ -1,2 +1,0 @@
-C:\Users\jaime\OneDrive\Documentos\GitKraken\AppliedGPUProgramming\AppliedGPUAssignments\Debug\AppliedGPUAssignments.exe
-C:\Users\jaime\OneDrive\Documentos\GitKraken\AppliedGPUProgramming\AppliedGPUAssignments\Debug\AppliedGPUAssignments.pdb

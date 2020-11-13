@@ -1,0 +1,2 @@
+C:\Users\jaime\OneDrive\Documentos\GitKraken\AppliedGPUProgramming\AppliedGPUAssignments\ex_bonus\x64\Debug\ex_bonus.exe
+C:\Users\jaime\OneDrive\Documentos\GitKraken\AppliedGPUProgramming\AppliedGPUAssignments\ex_bonus\x64\Debug\ex_bonus.pdb
