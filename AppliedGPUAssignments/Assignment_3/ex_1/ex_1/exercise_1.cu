@@ -342,7 +342,7 @@ __global__ void gpu_gaussian(int width, int height, float* image, float* image_o
     int col = blockIdx.x * blockDim.x + threadIdx.x;
 
     int offset_t = row * width + col;
-    //int offset = (row + 1) * width + (col + 1);
+    int offset = (row + 1) * width + (col + 1);
 
     
 
@@ -380,9 +380,9 @@ __global__ void gpu_gaussian(int width, int height, float* image, float* image_o
     sh_block[idThreadInsideBlock_SH] = image[offset_t];
     __syncthreads();
 
-    if (threadIdx.x < BLOCK_SIZE && threadIdx.y < BLOCK_SIZE) 
+    if (idThreadInsideBlock_t < BLOCK_SIZE * BLOCK_SIZE)
     {
-        image_out[offset_t] = gpu_applyFilter(&sh_block[idThreadInsideBlock_SH],
+        image_out[offset] = gpu_applyFilter(&sh_block[idThreadInsideBlock_SH],
             BLOCK_SIZE_SH, gaussian, 3);
     }
     
@@ -532,11 +532,11 @@ int main(int argc, char** argv)
     // Step 1: Convert to grayscale
     {
         // Launch the CPU version
-        gettimeofday(&t[0], NULL);
+        //gettimeofday(&t[0], NULL);
         //cpu_grayscale(bitmap.width, bitmap.height, bitmap.data, image_out[0]);
-        gettimeofday(&t[1], NULL);
+        //gettimeofday(&t[1], NULL);
 
-        elapsed[0] = get_elapsed(t[0], t[1]);
+        //elapsed[0] = get_elapsed(t[0], t[1]);
 
         // Launch the GPU version
         gettimeofday(&t[0], NULL);
@@ -558,13 +558,13 @@ int main(int argc, char** argv)
     {
         // Launch the CPU version
         gettimeofday(&t[0], NULL);
-        //cpu_gaussian(bitmap.width, bitmap.height, image_out[0], image_out[1]);
+        cpu_gaussian(bitmap.width, bitmap.height, image_out[0], image_out[1]);
         gettimeofday(&t[1], NULL);
 
         elapsed[0] = get_elapsed(t[0], t[1]);
 
         // Launch the GPU version
-        gettimeofday(&t[0], NULL);
+        /*gettimeofday(&t[0], NULL);
         gpu_gaussian <<<grid, block>>>(bitmap.width, bitmap.height,
                                       d_image_out[0], d_image_out[1]);
 
@@ -572,7 +572,7 @@ int main(int argc, char** argv)
                     image_size * sizeof(float), cudaMemcpyDeviceToHost);
         gettimeofday(&t[1], NULL);
 
-        elapsed[1] = get_elapsed(t[0], t[1]);
+        elapsed[1] = get_elapsed(t[0], t[1]);*/
 
         // Store the result image with the Gaussian filter applied
         store_result(2, elapsed[0], elapsed[1], bitmap.width, bitmap.height, image_out[1]);
@@ -581,9 +581,9 @@ int main(int argc, char** argv)
     // Step 3: Apply a Sobel filter
     {
         // Launch the CPU version
-        gettimeofday(&t[0], NULL);
+        //gettimeofday(&t[0], NULL);
         //cpu_sobel(bitmap.width, bitmap.height, image_out[1], image_out[0]);
-        gettimeofday(&t[1], NULL);
+        //gettimeofday(&t[1], NULL);
 
         elapsed[0] = get_elapsed(t[0], t[1]);
 
@@ -601,6 +601,8 @@ int main(int argc, char** argv)
         // Store the final result image with the Sobel filter applied
         store_result(3, elapsed[0], elapsed[1], bitmap.width, bitmap.height, image_out[0]);
     }
+
+
 
     // Release the allocated memory
     for (int i = 0; i < 2; i++)

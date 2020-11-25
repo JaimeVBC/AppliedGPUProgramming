@@ -125,16 +125,17 @@ int main()
 
 	printf("\nNUM_PARTICLES:  %d ", NUM_PARTICLES);
 	printf("\nNUM_ITERATIONS:  %d ", NUM_ITERATIONS);
+	printf("\nNUM_STREAMS:  %d ", NUM_STREAMS);
 	printf("\nThreads per block:  %d ", TPB);
 	printf("\nNumber of thread blocks:  %d \n\n", (NUM_PARTICLES + TPB - 1) / TPB);
 
 	Particle* d_particleArray;
 	Particle* particleArray;
 
-	int batch_size = NUM_PARTICLES / NUM_STREAMS;
-
+	const int batch_size = NUM_PARTICLES / NUM_STREAMS;
 
 	cudaStream_t streamArray[NUM_STREAMS];
+
 	for (int i = 0; i < NUM_STREAMS; i++)
 	{
 		cudaStreamCreate(&streamArray[i]);
@@ -142,23 +143,18 @@ int main()
 	
 	Particle* batchOffsets[NUM_STREAMS];
 	Particle* d_batchOffsets[NUM_STREAMS];
-	for (int i = 0; i < NUM_STREAMS; i++)
-	{
-		d_batchOffsets[i] = &d_particleArray[batch_size * i];
-		batchOffsets[i] = &particleArray[batch_size * i];
-	}
 
-	// We ask for pinned memory allocation
-	cudaMallocHost(&d_particleArray, NUM_PARTICLES * sizeof(Particle),cudaHostAllocDefault);
+	// We ask for memory allocation
+	cudaMalloc(&d_particleArray, NUM_PARTICLES * sizeof(Particle));
 
-	// We check for errors after requesting pinned memory allocation
+	// We check for errors after requesting memory allocation
 	if (d_particleArray == NULL)
 	{
 		printf("\n\nERROR 1! fail when allocating cuda dynamic pinned memory!\n\n");
 		return 1;
 	}
 
-	particleArray = (Particle*)malloc(NUM_PARTICLES * sizeof(Particle));
+	cudaHostAlloc(&particleArray, NUM_PARTICLES * sizeof(Particle), cudaHostAllocDefault);
 
 	if (particleArray == NULL)
 	{
@@ -172,6 +168,12 @@ int main()
 		particleArray[i].velocity = make_float3(rand(), rand(), rand());
 	}
 
+	for (int i = 0; i < NUM_STREAMS; i++)
+	{
+		d_batchOffsets[i] = &d_particleArray[batch_size * i];
+		batchOffsets[i] = &particleArray[batch_size * i];
+	}
+
 	// Let's measure the time
 	struct timeval tStart;
 	struct timeval tEnd;
@@ -182,21 +184,42 @@ int main()
 	gettimeofday(&tStart, NULL);
 
 	// Launch kernel to print hello worlds with Ids
+
+	// Approach 1
+	/*for (int i = 0; i < NUM_ITERATIONS; i++)
+	{
+		for (int j = 0; j < NUM_STREAMS; j++)
+		{
+			// Copy the particles data from the CPU into the GPU pinned memory
+			cudaMemcpyAsync(d_batchOffsets[j], batchOffsets[j], batch_size * sizeof(Particle), cudaMemcpyHostToDevice, streamArray[j]);
+			
+			// Then, process the particles data in the GPU 
+			kernelParticlesUpdate KERNEL_ARGS4((batch_size + TPB - 1) / TPB, TPB, 0, streamArray[j])(batch_size, d_batchOffsets[j]);
+			
+			// Copy the particles data from the GPU into the CPU 
+			cudaMemcpyAsync(batchOffsets[j], d_batchOffsets[j], batch_size * sizeof(Particle), cudaMemcpyDeviceToHost, streamArray[j]);
+		}
+	}*/
+
+	// Approach 2
 	for (int i = 0; i < NUM_ITERATIONS; i++)
 	{
 		for (int j = 0; j < NUM_STREAMS; j++)
 		{
 			// Copy the particles data from the CPU into the GPU pinned memory
 			cudaMemcpyAsync(d_batchOffsets[j], batchOffsets[j], batch_size * sizeof(Particle), cudaMemcpyHostToDevice, streamArray[j]);
-
+		}
+		for (int j = 0; j < NUM_STREAMS; j++)
+		{
 			// Then, process the particles data in the GPU 
-			kernelParticlesUpdate KERNEL_ARGS4((batch_size + TPB - 1) / TPB, TPB,0,streamArray[j])(batch_size, d_batchOffsets[j]);
-
+			kernelParticlesUpdate KERNEL_ARGS4((batch_size + TPB - 1) / TPB, TPB, 0, streamArray[j])(batch_size, d_batchOffsets[j]);
+		}
+		for (int j = 0; j < NUM_STREAMS; j++)
+		{
 			// Copy the particles data from the GPU into the CPU 
 			cudaMemcpyAsync(batchOffsets[j], d_batchOffsets[j], batch_size * sizeof(Particle), cudaMemcpyDeviceToHost, streamArray[j]);
 		}
 	}
-	
 	
 	// We wait for the GPU
 	cudaDeviceSynchronize();
@@ -206,19 +229,14 @@ int main()
 
 	// And finally print the timer
 	printf("GPU Particles Update completed in %3.10f miliseconds \n", ((tEnd.tv_sec - tStart.tv_sec) * 1000000.0 + (tEnd.tv_usec - tStart.tv_usec)) / 1000.0);
-	Particle* d_particleArrayRes = (Particle*)malloc(NUM_PARTICLES * sizeof(Particle));
-	if (d_particleArrayRes == NULL)	{printf("\n\nERROR 2! fail when allocating cuda dynamic memory!\n\n");		return 1;}
-	cudaMemcpy(d_particleArrayRes, d_particleArray, NUM_PARTICLES * sizeof(Particle), cudaMemcpyDeviceToHost);
-
+	
 	for (int i = 0; i < NUM_STREAMS; i++)
 	{
 		cudaStreamDestroy(streamArray[i]);
 	}
 
-	cudaFreeHost(d_particleArray);
-	free(particleArray);
-	free(d_particleArrayRes);
-
+	cudaFree(d_particleArray);
+	cudaFreeHost(particleArray);
 
 	printf("\nExcercise 3 completed! \n");
 

@@ -11,7 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <CudaCompile Include="exercise_3.cu" />
+    <CudaCompile Include="ex_bonus.cu" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{1687514D-72E2-4220-8957-559769A9D661}</ProjectGuid>
