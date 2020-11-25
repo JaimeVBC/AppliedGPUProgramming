@@ -1,0 +1,17 @@
+﻿  Compiling CUDA source file exercise_3.cu...
+  
+  C:\Users\jaime\OneDrive\Documentos\GitKraken\AppliedGPUProgramming\AppliedGPUAssignments\Assignment_3\ex_bonus>"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.0\bin\nvcc.exe" -gencode=arch=compute_52,code=\"sm_52,compute_52\" --use-local-env -ccbin "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.28.29333\bin\HostX86\x64" -x cu   -I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.0\include" -I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.0\include"  -G   --keep-dir x64\Debug -maxrregcount=0  --machine 64 --compile -cudart static  -g   -DWIN32 -DWIN64 -D_DEBUG -D_CONSOLE -D_MBCS -Xcompiler "/EHsc /W3 /nologo /Od /Fdx64\Debug\vc142.pdb /FS /Zi /RTC1 /MDd " -o x64\Debug\exercise_3.cu.obj "C:\Users\jaime\OneDrive\Documentos\GitKraken\AppliedGPUProgramming\AppliedGPUAssignments\Assignment_3\ex_bonus\exercise_3.cu" 
+C:/Users/jaime/OneDrive/Documentos/GitKraken/AppliedGPUProgramming/AppliedGPUAssignments/Assignment_3/ex_bonus/exercise_3.cu(224): warning : variable "alpha" was declared but never referenced
+  
+C:/Users/jaime/OneDrive/Documentos/GitKraken/AppliedGPUProgramming/AppliedGPUAssignments/Assignment_3/ex_bonus/exercise_3.cu(225): warning : variable "beta" was declared but never referenced
+  
+  exercise_3.cu
+C:/Users/jaime/OneDrive/Documentos/GitKraken/AppliedGPUProgramming/AppliedGPUAssignments/Assignment_3/ex_bonus/exercise_3.cu(62): warning C4244: '=': conversion from '__int64' to 'long', possible loss of data
+     Creating library C:\Users\jaime\OneDrive\Documentos\GitKraken\AppliedGPUProgramming\AppliedGPUAssignments\Assignment_3\ex_bonus\x64\Debug\ex_bonus.lib and object C:\Users\jaime\OneDrive\Documentos\GitKraken\AppliedGPUProgramming\AppliedGPUAssignments\Assignment_3\ex_bonus\x64\Debug\ex_bonus.exp
+exercise_3.cu.obj : error LNK2019: unresolved external symbol curandCreateGenerator referenced in function "void __cdecl init_matrix(float *,long,unsigned __int64)" (?init_matrix@@YAXPEAMJ_K@Z)
+exercise_3.cu.obj : error LNK2019: unresolved external symbol curandDestroyGenerator referenced in function "void __cdecl init_matrix(float *,long,unsigned __int64)" (?init_matrix@@YAXPEAMJ_K@Z)
+exercise_3.cu.obj : error LNK2019: unresolved external symbol curandSetPseudoRandomGeneratorSeed referenced in function "void __cdecl init_matrix(float *,long,unsigned __int64)" (?init_matrix@@YAXPEAMJ_K@Z)
+exercise_3.cu.obj : error LNK2019: unresolved external symbol curandGenerateUniform referenced in function "void __cdecl init_matrix(float *,long,unsigned __int64)" (?init_matrix@@YAXPEAMJ_K@Z)
+exercise_3.cu.obj : error LNK2019: unresolved external symbol cublasCreate_v2 referenced in function "void __cdecl cublas_sgemm(float *,float *,float *,long)" (?cublas_sgemm@@YAXPEAM00J@Z)
+exercise_3.cu.obj : error LNK2019: unresolved external symbol cublasDestroy_v2 referenced in function "void __cdecl cublas_sgemm(float *,float *,float *,long)" (?cublas_sgemm@@YAXPEAM00J@Z)
+C:\Users\jaime\OneDrive\Documentos\GitKraken\AppliedGPUProgramming\AppliedGPUAssignments\Assignment_3\ex_bonus\x64\Debug\ex_bonus.exe : fatal error LNK1120: 6 unresolved externals
