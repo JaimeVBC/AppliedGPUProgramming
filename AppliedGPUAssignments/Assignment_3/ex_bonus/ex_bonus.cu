@@ -9,6 +9,7 @@
 #include <string.h>
 #include <device_launch_parameters.h>
 #include <curand.h>
+//#include <openacc.h>
 
 int     opterr = 1,             // if error message should be printed 
   optind = 1,             // index into parent argv vector 
@@ -20,7 +21,7 @@ const char *optarg;		// argument associated with option
 #define TILE_SIZE 16
 #endif
 
-#define THRESHOLD 1e-3
+#define THRESHOLD 2//1e-3
 
 
 #define BADCH   (int)'?'
@@ -129,6 +130,7 @@ void cpu_sgemm(float *C, float *A, float *B, long size)
 
 	gettimeofday(&t0, NULL);
 
+	#pragma acc parallel loop
 	for (long i = 0; i < size; i++) {
 		for (long k = 0; k < size; k++) {
 			for (long j = 0; j < size; j++) {
@@ -188,6 +190,7 @@ __global__ void shared_sgemm_kernel(float *C, float *A, float *B, long size)
 		const long local_col = blockIdx.x * TILE_SIZE + threadIdx.x;
 		const long local_row = blockIdx.y * TILE_SIZE + threadIdx.y;
 
+		
 		for (long m = 0; m < size / TILE_SIZE; ++m) {
 			tile_A[threadIdx.y][threadIdx.x] = A[local_row * size + (m * TILE_SIZE + threadIdx.x)];
 			tile_B[threadIdx.y][threadIdx.x] = B[(m * TILE_SIZE + threadIdx.y) * size + local_col];
@@ -195,10 +198,13 @@ __global__ void shared_sgemm_kernel(float *C, float *A, float *B, long size)
 			__syncthreads();
 	
 			/* TODO introduce a pragma directive that can potentially improve performance here */
+			// We don't imagine what directive could be
+			//#pragma unroll
+			//#pragma acc parallel loop
 			for (long k = 0; k < TILE_SIZE; ++k) 
 			{
 				/* TODO Perform multiplication here */ // DONE
-				val += tile_A[k][local_col * size] * tile_B[local_row][k * size];
+				val += tile_A[k][threadIdx.x] * tile_B[threadIdx.y][k];
 			}
 			__syncthreads();
 		}
@@ -232,7 +238,7 @@ void cublas_sgemm(float *C, float *A, float *B, long size)
 
 	gettimeofday(&t0, NULL);
 	/* TODO fill in the blanks, do C = BA instead of C = AB */
-	//cublasSgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, , , , , , , , , , , );
+	cublasSgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, size, size, size, &alpha, B, size, A, size, &beta, C, size);
 	checkCudaErrors(cudaDeviceSynchronize());
 	gettimeofday(&t1, NULL);
 	cublasDestroy(handle);

@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h> // changed instead of sys/time.h
-#include <Windows.h> // Added by ourselves!!!!
+#include <Windows.h> // Added by ourselves
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
@@ -576,17 +576,7 @@ int main(int argc, char** argv)
 
         // Store the result image with the Gaussian filter applied
         store_result(2, elapsed[0], elapsed[1], bitmap.width, bitmap.height, image_out[1]);
-    }
-
-    // Step 3: Apply a Sobel filter
-    {
-        // Launch the CPU version
-        //gettimeofday(&t[0], NULL);
-        //cpu_sobel(bitmap.width, bitmap.height, image_out[1], image_out[0]);
-        //gettimeofday(&t[1], NULL);
-
-        elapsed[0] = get_elapsed(t[0], t[1]);
-
+    } 
         // Launch the GPU version
         gettimeofday(&t[0], NULL);
         gpu_sobel<<<grid, block>>>(bitmap.width, bitmap.height,
