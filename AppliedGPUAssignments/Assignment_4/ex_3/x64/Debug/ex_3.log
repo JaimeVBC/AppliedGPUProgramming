@@ -1,0 +1,30 @@
+﻿  exercise_3.c
+E:\Alejandro\Uni\4º\Advanced Graphics\GitRepository\AppliedGPUProgramming\AppliedGPUAssignments\Assignment_4\ex_3\exercise_3.c(50,43): warning C4244: '=': conversion from 'LONGLONG' to 'long', possible loss of data
+E:\Alejandro\Uni\4º\Advanced Graphics\GitRepository\AppliedGPUProgramming\AppliedGPUAssignments\Assignment_4\ex_3\exercise_3.c(61,22): warning C4244: 'function': conversion from 'float' to 'int', possible loss of data
+E:\Alejandro\Uni\4º\Advanced Graphics\GitRepository\AppliedGPUProgramming\AppliedGPUAssignments\Assignment_4\ex_3\exercise_3.c(94,48): error C2065: 'Particle': undeclared identifier
+E:\Alejandro\Uni\4º\Advanced Graphics\GitRepository\AppliedGPUProgramming\AppliedGPUAssignments\Assignment_4\ex_3\exercise_3.c(96,12): error C2065: 'Particle': undeclared identifier
+E:\Alejandro\Uni\4º\Advanced Graphics\GitRepository\AppliedGPUProgramming\AppliedGPUAssignments\Assignment_4\ex_3\exercise_3.c(96,15): error C2065: 'X': undeclared identifier
+E:\Alejandro\Uni\4º\Advanced Graphics\GitRepository\AppliedGPUProgramming\AppliedGPUAssignments\Assignment_4\ex_3\exercise_3.c(96,27): error C2065: 'Particle': undeclared identifier
+E:\Alejandro\Uni\4º\Advanced Graphics\GitRepository\AppliedGPUProgramming\AppliedGPUAssignments\Assignment_4\ex_3\exercise_3.c(96,28): error C2059: syntax error: ')'
+E:\Alejandro\Uni\4º\Advanced Graphics\GitRepository\AppliedGPUProgramming\AppliedGPUAssignments\Assignment_4\ex_3\exercise_3.c(97,9): error C2065: 'X': undeclared identifier
+E:\Alejandro\Uni\4º\Advanced Graphics\GitRepository\AppliedGPUProgramming\AppliedGPUAssignments\Assignment_4\ex_3\exercise_3.c(97,16): warning C4047: '==': 'int' differs in levels of indirection from 'void *'
+E:\Alejandro\Uni\4º\Advanced Graphics\GitRepository\AppliedGPUProgramming\AppliedGPUAssignments\Assignment_4\ex_3\exercise_3.c(103,5): error C2065: 'X': undeclared identifier
+E:\Alejandro\Uni\4º\Advanced Graphics\GitRepository\AppliedGPUProgramming\AppliedGPUAssignments\Assignment_4\ex_3\exercise_3.c(103,7): error C2109: subscript requires array or pointer type
+E:\Alejandro\Uni\4º\Advanced Graphics\GitRepository\AppliedGPUProgramming\AppliedGPUAssignments\Assignment_4\ex_3\exercise_3.c(111,73): error C2065: 'X': undeclared identifier
+E:\Alejandro\Uni\4º\Advanced Graphics\GitRepository\AppliedGPUProgramming\AppliedGPUAssignments\Assignment_4\ex_3\exercise_3.c(111,72): warning C4022: 'clEnqueueWriteBuffer': pointer mismatch for actual parameter 6
+E:\Alejandro\Uni\4º\Advanced Graphics\GitRepository\AppliedGPUProgramming\AppliedGPUAssignments\Assignment_4\ex_3\exercise_3.c(112,73): error C2065: 'Y': undeclared identifier
+E:\Alejandro\Uni\4º\Advanced Graphics\GitRepository\AppliedGPUProgramming\AppliedGPUAssignments\Assignment_4\ex_3\exercise_3.c(112,72): warning C4022: 'clEnqueueWriteBuffer': pointer mismatch for actual parameter 6
+E:\Alejandro\Uni\4º\Advanced Graphics\GitRepository\AppliedGPUProgramming\AppliedGPUAssignments\Assignment_4\ex_3\exercise_3.c(150,72): error C2065: 'Y': undeclared identifier
+E:\Alejandro\Uni\4º\Advanced Graphics\GitRepository\AppliedGPUProgramming\AppliedGPUAssignments\Assignment_4\ex_3\exercise_3.c(150,71): warning C4022: 'clEnqueueReadBuffer': pointer mismatch for actual parameter 6
+E:\Alejandro\Uni\4º\Advanced Graphics\GitRepository\AppliedGPUProgramming\AppliedGPUAssignments\Assignment_4\ex_3\exercise_3.c(155,28): error C2065: 'Y': undeclared identifier
+E:\Alejandro\Uni\4º\Advanced Graphics\GitRepository\AppliedGPUProgramming\AppliedGPUAssignments\Assignment_4\ex_3\exercise_3.c(155,28): warning C4047: 'function': 'float *' differs in levels of indirection from 'int'
+E:\Alejandro\Uni\4º\Advanced Graphics\GitRepository\AppliedGPUProgramming\AppliedGPUAssignments\Assignment_4\ex_3\exercise_3.c(155,27): warning C4024: 'compare_saxpy': different types for formal and actual parameter 1
+E:\Alejandro\Uni\4º\Advanced Graphics\GitRepository\AppliedGPUProgramming\AppliedGPUAssignments\Assignment_4\ex_3\exercise_3.c(155,35): error C2065: 'Y_CPU': undeclared identifier
+E:\Alejandro\Uni\4º\Advanced Graphics\GitRepository\AppliedGPUProgramming\AppliedGPUAssignments\Assignment_4\ex_3\exercise_3.c(155,35): warning C4047: 'function': 'float *' differs in levels of indirection from 'int'
+E:\Alejandro\Uni\4º\Advanced Graphics\GitRepository\AppliedGPUProgramming\AppliedGPUAssignments\Assignment_4\ex_3\exercise_3.c(155,30): warning C4024: 'compare_saxpy': different types for formal and actual parameter 2
+E:\Alejandro\Uni\4º\Advanced Graphics\GitRepository\AppliedGPUProgramming\AppliedGPUAssignments\Assignment_4\ex_3\exercise_3.c(169,9): error C2065: 'X': undeclared identifier
+E:\Alejandro\Uni\4º\Advanced Graphics\GitRepository\AppliedGPUProgramming\AppliedGPUAssignments\Assignment_4\ex_3\exercise_3.c(169,8): warning C4022: 'free': pointer mismatch for actual parameter 1
+E:\Alejandro\Uni\4º\Advanced Graphics\GitRepository\AppliedGPUProgramming\AppliedGPUAssignments\Assignment_4\ex_3\exercise_3.c(170,9): error C2065: 'Y': undeclared identifier
+E:\Alejandro\Uni\4º\Advanced Graphics\GitRepository\AppliedGPUProgramming\AppliedGPUAssignments\Assignment_4\ex_3\exercise_3.c(170,8): warning C4022: 'free': pointer mismatch for actual parameter 1
+E:\Alejandro\Uni\4º\Advanced Graphics\GitRepository\AppliedGPUProgramming\AppliedGPUAssignments\Assignment_4\ex_3\exercise_3.c(171,13): error C2065: 'Y_CPU': undeclared identifier
+E:\Alejandro\Uni\4º\Advanced Graphics\GitRepository\AppliedGPUProgramming\AppliedGPUAssignments\Assignment_4\ex_3\exercise_3.c(171,8): warning C4022: 'free': pointer mismatch for actual parameter 1
