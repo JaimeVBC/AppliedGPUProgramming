@@ -3,25 +3,70 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <CL/cl.h>
+#include <time.h>
+#include <Windows.h>
 
 // This is a macro for checking the error variable.
 #define CHK_ERROR(err) if (err != CL_SUCCESS) fprintf(stderr,"Error: %s\n",clGetErrorString(err));
 
-#define ARRAY_SIZE 10000
-
+#define ARRAY_SIZE 10000000
 // A errorCode to string converter (forward declaration)
 const char* clGetErrorString(int);
 
 
 const char* mykernel =
 "__kernel					\n"
-"void hello ()				\n"
-"{int index[6] = {get_local_id(0),get_local_id(1),get_local_id(2),get_group_id(0),get_group_id(1),get_group_id(2)}; \n"
-"printf(\"Hello World! My thread is (%d,%d,%d) within the block (%d,%d,%d).  \\n \",index[0],index[1],index[2],index[3],index[4],index[5]); } \n";
-//"; //TODO: Write your kernel here"
+"void saxpy_gpu (__global float *X,				\n"
+"				 __global float *Y,				\n"
+"				 float a,				\n"
+"				 int array_size_aux)				\n"
 
+"{int index = get_global_id(0);					\n"
+"if(index < array_size_aux) ;					\n"
+	"Y[index] = X[index]*a + Y[index];}				\n";
+
+
+int gettimeofday(struct timeval* tv, struct timezone* tz)
+{
+	static LONGLONG birthunixhnsec = 116444736000000000;  /*in units of 100 ns */
+
+	FILETIME systemtime;
+	GetSystemTimeAsFileTime(&systemtime);
+
+	ULARGE_INTEGER utime;
+	utime.LowPart = systemtime.dwLowDateTime;
+	utime.HighPart = systemtime.dwHighDateTime;
+
+	ULARGE_INTEGER birthunix;
+	birthunix.LowPart = (DWORD)birthunixhnsec;
+	birthunix.HighPart = birthunixhnsec >> 32;
+
+	LONGLONG usecs;
+	usecs = (LONGLONG)((utime.QuadPart - birthunix.QuadPart) / 10);
+
+	tv->tv_sec = (long long)(usecs / 1000000);
+	tv->tv_usec = (long long)(usecs % 1000000);
+
+	return 0;
+}
+
+int compare_saxpy(float* X, float* Y)
+{
+	int i;
+	for (i = 0; i < ARRAY_SIZE; i++)
+	{
+		if (abs(X[i] - Y[i]) > 0.001f) return 0;
+	}
+
+	return 1;
+
+}
 
 int main(int argc, char *argv) {
+
+  struct timeval tStart;
+  struct timeval tEnd;
+
   cl_platform_id * platforms; cl_uint     n_platform;
 
   // Find OpenCL Platforms
@@ -36,12 +81,40 @@ int main(int argc, char *argv) {
   err = clGetDeviceIDs( platforms[0],CL_DEVICE_TYPE_GPU, n_devices, device_list, NULL);CHK_ERROR(err);
   
   // Create and initialize an OpenCL context
-  cl_context context = clCreateContext( NULL, n_devices, device_list, NULL, NULL, &err);CHK_ERROR(err);
+	cl_context context = clCreateContext( NULL, n_devices, device_list, NULL, NULL, &err);CHK_ERROR(err);
 
   // Create a command queue
-  cl_command_queue cmd_queue = clCreateCommandQueue(context, device_list[0], 0, &err);CHK_ERROR(err); 
+  if (device_list == NULL) return;
+  cl_command_queue cmd_queue = clCreateCommandQueue(context, device_list[0], 0, &err);CHK_ERROR(err);
 
-  /* Insert your own code here */
+  //initialize arrays
+  int array_size = ARRAY_SIZE * sizeof(float);
+  float a;
+  float* X =	 (float*)malloc(array_size);
+  if (X == NULL) return;
+  float* Y =	 (float*)malloc(array_size);
+  if (Y == NULL) return;
+  float* Y_CPU = (float*)malloc(array_size);
+  if (Y_CPU == NULL) return;
+
+
+  int i;
+  for (i = 0; i < ARRAY_SIZE; i++)
+  {
+	  X[i] = i;
+	  Y[i] = ARRAY_SIZE - i;
+	  Y_CPU[i] = 0;
+  }
+
+//Create buffers in the GPU
+  cl_mem X_dev = clCreateBuffer(context, CL_MEM_READ_ONLY, array_size, NULL, &err);
+  cl_mem Y_dev = clCreateBuffer(context, CL_MEM_READ_WRITE, array_size, NULL, &err);
+
+//Enqueue the array in the GPU
+  err = clEnqueueWriteBuffer(cmd_queue, X_dev, CL_TRUE, 0, array_size, X, 0, NULL, NULL); CHK_ERROR(err);
+  err = clEnqueueWriteBuffer(cmd_queue, Y_dev, CL_TRUE, 0, array_size, Y, 0, NULL, NULL); CHK_ERROR(err);
+
+// create program
   cl_program program = clCreateProgramWithSource(context, 1, (const char**)&mykernel, NULL, &err);
 
   err = clBuildProgram(program, 1, device_list, NULL, NULL, NULL);
@@ -54,22 +127,56 @@ int main(int argc, char *argv) {
 	  return 0;
   }
 
-  cl_kernel kernel = clCreateKernel(program, "hello", &err);
+  cl_kernel kernel = clCreateKernel(program, "saxpy_gpu", &err);
 
-  size_t n_workitem = ARRAY_SIZE;
+  //Set the 3 arguments of our kernel
+  int array_size_aux = ARRAY_SIZE;
+  err = clSetKernelArg(kernel, 0, sizeof(cl_mem), (void*)&X_dev); CHK_ERROR(err);
+  err = clSetKernelArg(kernel, 1, sizeof(cl_mem), (void*)&Y_dev); CHK_ERROR(err);
+  err = clSetKernelArg(kernel, 2, sizeof(float), (void*)&a); CHK_ERROR(err);
+  err = clSetKernelArg(kernel, 3, sizeof(int), (void*)&array_size_aux); CHK_ERROR(err);
+
+
   size_t workgroup_size = 256;
-  
+  size_t num_blocks = (ARRAY_SIZE + workgroup_size - 1) / workgroup_size;
+  size_t n_workitem = num_blocks * workgroup_size;
+
+
+  gettimeofday(&tStart, NULL);
+  //CPU SAXPY
+  for (i = 0; i < ARRAY_SIZE; i++)
+	  Y_CPU[i] = X[i]*a + Y[i];
+  gettimeofday(&tEnd, NULL);
+  printf("CPU SAXPY completed in %3.10f miliseconds \n", ((tEnd.tv_sec - tStart.tv_sec) * 1000000.0 + (tEnd.tv_usec - tStart.tv_usec)) / 1000.0);
+
   // Kernel launch
-  err = clEnqueueNDRangeKernel(cmd_queue, kernel, 3, NULL, &n_workitem, &workgroup_size, 0, NULL, NULL);
+  gettimeofday(&tStart, NULL);
+  err = clEnqueueNDRangeKernel(cmd_queue, kernel, 1, NULL, &n_workitem, &workgroup_size, 0, NULL, NULL); CHK_ERROR(err);
+
   
-  err = clFlush(cmd_queue);
-  err = clFinish(cmd_queue);
+  //Transfer the data back to the host
+  err = clEnqueueReadBuffer(cmd_queue, Y_dev, CL_TRUE, 0, array_size, Y, 0, NULL, NULL); CHK_ERROR(err);
+  gettimeofday(&tEnd, NULL);
+  printf("GPU SAXPY completed in %3.10f miliseconds \n", ((tEnd.tv_sec - tStart.tv_sec) * 1000000.0 + (tEnd.tv_usec - tStart.tv_usec)) / 1000.0);
+
+  //Check GPU and CPU SAXPU
+  int res = compare_saxpy(Y, Y_CPU);
+  if (res == 0) printf("Arrays ARE NOT equivalent");
+  else printf("Arrays ARE equivalent");
+
+
+  //Finish
+  err = clFlush(cmd_queue); CHK_ERROR(err);
+  err = clFinish(cmd_queue); CHK_ERROR(err);
 
   // Finally, release all that we have allocated.
-  err = clReleaseCommandQueue(cmd_queue);CHK_ERROR(err);
-  err = clReleaseContext(context);CHK_ERROR(err);
+  err = clReleaseCommandQueue(cmd_queue);CHK_ERROR(err); CHK_ERROR(err);
+  err = clReleaseContext(context);CHK_ERROR(err); CHK_ERROR(err);
   free(platforms);
   free(device_list);
+  free(X);
+  free(Y);
+  free(Y_CPU);
   
   return 0;
 }
