@@ -66,7 +66,7 @@ void cpuParticlesUpdate(Particle* particleArray)
 
 		// Velocity update
 		particleArray[i].velocity.x *= (float) 0.5 * i;
-		particleArray[i].velocity.y *= (float)2 * i;
+		particleArray[i].velocity.y *= (float) 2 * i;
 		particleArray[i].velocity.z *= (float) 0.75 * i;
 
 		// Position update 

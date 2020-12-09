@@ -9,24 +9,43 @@
 // This is a macro for checking the error variable.
 #define CHK_ERROR(err) if (err != CL_SUCCESS) fprintf(stderr,"Error: %s\n",clGetErrorString(err));
 
-#define ARRAY_SIZE 10000000
+#define ARRAY_SIZE 10000
+#define NUM_ITERATIONS 100000
 // A errorCode to string converter (forward declaration)
 const char* clGetErrorString(int);
 
 //Particle structure
-struct Particle
+// Device declaration
+/*struct Particle
 {
 	cl_float3 pos;
 	cl_float3 vel;
-};
+};*/
+
+// Host declaration
+typedef struct
+{
+	cl_float3 pos;
+	cl_float3 vel;
+}Particle;
 
 
 const char* mykernel =
+"struct Particle			\n"
+"{							\n"
+"	float3 pos;			\n"
+"	float3 vel;			\n"
+"};							\n"
 "__kernel					\n"
-"void saxpy_gpu (__global Particle *X)				\n"
-"{int index = get_global_id(0);					\n"
-"if(index < array_size_aux) ;					\n"
-	"Y[index] = X[index]*a + Y[index];}				\n";
+"void particles_gpu (__global struct Particle *X, int array_size_aux){				\n"
+"int index = get_global_id(0);					\n"
+"if(index < array_size_aux){					\n"
+"X[index].vel.x += 0.5 * index;					\n"
+"X[index].vel.y += 2 * index;					\n"
+"X[index].vel.z += 0.75 * index;				\n"
+"X[index].pos.x += X[index].vel.x;				\n"
+"X[index].pos.y += X[index].vel.y; 				\n"
+"X[index].pos.z += X[index].vel.z;			  }}\n";
 
 
 int gettimeofday(struct timeval* tv, struct timezone* tz)
@@ -53,16 +72,35 @@ int gettimeofday(struct timeval* tv, struct timezone* tz)
 	return 0;
 }
 
-int compare_saxpy(float* X, float* Y)
+int compare_particles(Particle* X, Particle* Y)
 {
 	int i;
 	for (i = 0; i < ARRAY_SIZE; i++)
 	{
-		if (abs(X[i] - Y[i]) > 0.001f) return 0;
+		if (abs(X[i].pos.x - Y[i].pos.x) > 0.001f) return 0;
+		if (abs(X[i].pos.y - Y[i].pos.y) > 0.001f) return 0;
+		if (abs(X[i].pos.z - Y[i].pos.z) > 0.001f) return 0;
+		if (abs(X[i].vel.x - Y[i].vel.x) > 0.001f) return 0;
+		if (abs(X[i].vel.y - Y[i].vel.y) > 0.001f) return 0;
+		if (abs(X[i].vel.z - Y[i].vel.z) > 0.001f) return 0;
 	}
 
 	return 1;
 
+}
+
+void particles_CPU(Particle* X_CPU)
+{
+	int i;
+	for (i = 0; i < ARRAY_SIZE; i++)
+	{
+		X_CPU[i].vel.x += 0.5 * i;
+		X_CPU[i].vel.y += 2 * i;
+		X_CPU[i].vel.z += 0.75 * i;
+		X_CPU[i].pos.x += X_CPU[i].vel.x;
+		X_CPU[i].pos.y += X_CPU[i].vel.y;
+		X_CPU[i].pos.z += X_CPU[i].vel.z;
+	}
 }
 
 int main(int argc, char *argv) {
@@ -84,7 +122,7 @@ int main(int argc, char *argv) {
   err = clGetDeviceIDs( platforms[0],CL_DEVICE_TYPE_GPU, n_devices, device_list, NULL);CHK_ERROR(err);
   
   // Create and initialize an OpenCL context
-	cl_context context = clCreateContext( NULL, n_devices, device_list, NULL, NULL, &err);CHK_ERROR(err);
+  cl_context context = clCreateContext( NULL, n_devices, device_list, NULL, NULL, &err);CHK_ERROR(err);
 
   // Create a command queue
   if (device_list == NULL) return;
@@ -95,17 +133,32 @@ int main(int argc, char *argv) {
 
   Particle *X =	 (Particle*)malloc(array_size);
   if (X == NULL) return;
-
+  Particle *X_CPU =	 (Particle*)malloc(array_size);
+  if (X_CPU == NULL) return;
 
   int i;
   for (i = 0; i < ARRAY_SIZE; i++)
   {
-	  X[i].pos = new cl_float3(0.0.0);
+	  X[i].pos.x = rand();
+	  X[i].pos.y = rand();
+	  X[i].pos.z = rand();
+
+	  X[i].vel.x = rand();
+	  X[i].vel.y = rand();
+	  X[i].vel.z = rand();
+
+	  X_CPU[i].pos.x = X[i].pos.x;
+	  X_CPU[i].pos.y = X[i].pos.y;
+	  X_CPU[i].pos.z = X[i].pos.z;
+
+	  X_CPU[i].vel.x = X[i].vel.x;
+	  X_CPU[i].vel.y = X[i].vel.y;
+	  X_CPU[i].vel.z = X[i].vel.z;
 
   }
 
 //Create buffers in the GPU
-  cl_mem X_dev = clCreateBuffer(context, CL_MEM_READ_ONLY, array_size, NULL, &err);
+  cl_mem X_dev = clCreateBuffer(context, CL_MEM_READ_WRITE, array_size, NULL, &err);
 
 //Enqueue the array in the GPU
   err = clEnqueueWriteBuffer(cmd_queue, X_dev, CL_TRUE, 0, array_size, X, 0, NULL, NULL); CHK_ERROR(err);
@@ -123,33 +176,51 @@ int main(int argc, char *argv) {
 	  return 0;
   }
 
-  cl_kernel kernel = clCreateKernel(program, "saxpy_gpu", &err);
+  cl_kernel kernel = clCreateKernel(program, "particles_gpu", &err);
 
   //Set the 3 arguments of our kernel
   int array_size_aux = ARRAY_SIZE;
   err = clSetKernelArg(kernel, 0, sizeof(cl_mem), (void*)&X_dev); CHK_ERROR(err);
+  err = clSetKernelArg(kernel, 1, sizeof(int), (void*)&array_size_aux); CHK_ERROR(err);
 
   size_t workgroup_size = 256;
   size_t num_blocks = (ARRAY_SIZE + workgroup_size - 1) / workgroup_size;
   size_t n_workitem = num_blocks * workgroup_size;
 
-
+  // CPU implementation
   gettimeofday(&tStart, NULL);
-
-	
+  for (int i = 0; i < NUM_ITERATIONS; i++)
+  {
+	  particles_CPU(X_CPU);
+  }
   gettimeofday(&tEnd, NULL);
-  printf("CPU SAXPY completed in %3.10f miliseconds \n", ((tEnd.tv_sec - tStart.tv_sec) * 1000000.0 + (tEnd.tv_usec - tStart.tv_usec)) / 1000.0);
+  printf("CPU particles completed in %3.10f miliseconds \n", ((tEnd.tv_sec - tStart.tv_sec) * 1000000.0 + (tEnd.tv_usec - tStart.tv_usec)) / 1000.0);
+
 
   // Kernel launch
   gettimeofday(&tStart, NULL);
-  err = clEnqueueNDRangeKernel(cmd_queue, kernel, 1, NULL, &n_workitem, &workgroup_size, 0, NULL, NULL); CHK_ERROR(err);
-
+  for (int i = 0; i < NUM_ITERATIONS; i++)
+  {
+	  err = clEnqueueNDRangeKernel(cmd_queue, kernel, 1, NULL, &n_workitem, &workgroup_size, 0, NULL, NULL); CHK_ERROR(err);
+  }
   
   //Transfer the data back to the host
   err = clEnqueueReadBuffer(cmd_queue, X_dev, CL_TRUE, 0, array_size, X, 0, NULL, NULL); CHK_ERROR(err);
   gettimeofday(&tEnd, NULL);
-  printf("GPU SAXPY completed in %3.10f miliseconds \n", ((tEnd.tv_sec - tStart.tv_sec) * 1000000.0 + (tEnd.tv_usec - tStart.tv_usec)) / 1000.0);
+  
+  printf("GPU particles completed in %3.10f miliseconds \n", ((tEnd.tv_sec - tStart.tv_sec) * 1000000.0 + (tEnd.tv_usec - tStart.tv_usec)) / 1000.0);
 
+
+
+  // Arrays comparison
+  if (compare_particles(X, X_CPU))
+  {
+	  printf("Arrays ARE equivalent");
+  }
+  else
+  {
+	  printf("Arrays ARE NOT equivalent");
+  }
 
   //Finish
   err = clFlush(cmd_queue); CHK_ERROR(err);
@@ -161,8 +232,7 @@ int main(int argc, char *argv) {
   free(platforms);
   free(device_list);
   free(X);
-  free(Y);
-  free(Y_CPU);
+  free(X_CPU);
   
   return 0;
 }
