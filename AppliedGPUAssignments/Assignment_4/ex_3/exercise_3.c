@@ -9,18 +9,10 @@
 // This is a macro for checking the error variable.
 #define CHK_ERROR(err) if (err != CL_SUCCESS) fprintf(stderr,"Error: %s\n",clGetErrorString(err));
 
-#define ARRAY_SIZE 10000
-#define NUM_ITERATIONS 100000
+#define ARRAY_SIZE 10000000
+#define NUM_ITERATIONS 1000
 // A errorCode to string converter (forward declaration)
 const char* clGetErrorString(int);
-
-//Particle structure
-// Device declaration
-/*struct Particle
-{
-	cl_float3 pos;
-	cl_float3 vel;
-};*/
 
 // Host declaration
 typedef struct
@@ -183,16 +175,16 @@ int main(int argc, char *argv) {
   err = clSetKernelArg(kernel, 0, sizeof(cl_mem), (void*)&X_dev); CHK_ERROR(err);
   err = clSetKernelArg(kernel, 1, sizeof(int), (void*)&array_size_aux); CHK_ERROR(err);
 
-  size_t workgroup_size = 256;
+  size_t workgroup_size = 512;
   size_t num_blocks = (ARRAY_SIZE + workgroup_size - 1) / workgroup_size;
   size_t n_workitem = num_blocks * workgroup_size;
 
   // CPU implementation
   gettimeofday(&tStart, NULL);
-  for (int i = 0; i < NUM_ITERATIONS; i++)
+  /*for (int i = 0; i < NUM_ITERATIONS; i++)
   {
 	  particles_CPU(X_CPU);
-  }
+  }*/
   gettimeofday(&tEnd, NULL);
   printf("CPU particles completed in %3.10f miliseconds \n", ((tEnd.tv_sec - tStart.tv_sec) * 1000000.0 + (tEnd.tv_usec - tStart.tv_usec)) / 1000.0);
 
@@ -203,7 +195,7 @@ int main(int argc, char *argv) {
   {
 	  err = clEnqueueNDRangeKernel(cmd_queue, kernel, 1, NULL, &n_workitem, &workgroup_size, 0, NULL, NULL); CHK_ERROR(err);
   }
-  
+
   //Transfer the data back to the host
   err = clEnqueueReadBuffer(cmd_queue, X_dev, CL_TRUE, 0, array_size, X, 0, NULL, NULL); CHK_ERROR(err);
   gettimeofday(&tEnd, NULL);

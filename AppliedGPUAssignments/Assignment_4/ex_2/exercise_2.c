@@ -9,7 +9,7 @@
 // This is a macro for checking the error variable.
 #define CHK_ERROR(err) if (err != CL_SUCCESS) fprintf(stderr,"Error: %s\n",clGetErrorString(err));
 
-#define ARRAY_SIZE 10000000
+#define ARRAY_SIZE 100000000 
 // A errorCode to string converter (forward declaration)
 const char* clGetErrorString(int);
 
@@ -137,7 +137,7 @@ int main(int argc, char *argv) {
   err = clSetKernelArg(kernel, 3, sizeof(int), (void*)&array_size_aux); CHK_ERROR(err);
 
 
-  size_t workgroup_size = 256;
+  size_t workgroup_size = 64;
   size_t num_blocks = (ARRAY_SIZE + workgroup_size - 1) / workgroup_size;
   size_t n_workitem = num_blocks * workgroup_size;
 
