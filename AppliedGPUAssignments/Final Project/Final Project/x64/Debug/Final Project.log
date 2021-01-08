@@ -1,0 +1,34 @@
+﻿  Compiling CUDA source file finalproject.cu...
+  
+  E:\Alejandro\Uni\4º\Advanced Graphics\GitRepository\AppliedGPUProgramming\AppliedGPUAssignments\Final Project\Final Project>"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.0\bin\nvcc.exe" -gencode=arch=compute_52,code=\"sm_52,compute_52\" --use-local-env -ccbin "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.28.29333\bin\HostX86\x64" -x cu   -I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.0\include" -I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.0\include"  -G   --keep-dir x64\Debug -maxrregcount=0  --machine 64 --compile -cudart static  -g   -DWIN32 -DWIN64 -D_DEBUG -D_CONSOLE -D_MBCS -Xcompiler "/EHsc /W3 /nologo /Od /Fdx64\Debug\vc142.pdb /FS /Zi /RTC1 /MDd " -o x64\Debug\finalproject.cu.obj "E:\Alejandro\Uni\4º\Advanced Graphics\GitRepository\AppliedGPUProgramming\AppliedGPUAssignments\Final Project\Final Project\finalproject.cu" 
+E:/Alejandro/Uni/4║/Advanced Graphics/GitRepository/AppliedGPUProgramming/AppliedGPUAssignments/Final Project/Final Project/finalproject.cu(130): warning : variable "totalANnz" is used before its value is set
+  
+E:/Alejandro/Uni/4║/Advanced Graphics/GitRepository/AppliedGPUProgramming/AppliedGPUAssignments/Final Project/Final Project/finalproject.cu(130): warning : variable "dCsrRowPtrA" is used before its value is set
+  
+E:/Alejandro/Uni/4║/Advanced Graphics/GitRepository/AppliedGPUProgramming/AppliedGPUAssignments/Final Project/Final Project/finalproject.cu(130): warning : variable "dCsrColIndA" is used before its value is set
+  
+E:/Alejandro/Uni/4║/Advanced Graphics/GitRepository/AppliedGPUProgramming/AppliedGPUAssignments/Final Project/Final Project/finalproject.cu(130): warning : variable "dCsrValA" is used before its value is set
+  
+E:/Alejandro/Uni/4║/Advanced Graphics/GitRepository/AppliedGPUProgramming/AppliedGPUAssignments/Final Project/Final Project/finalproject.cu(130): warning : variable "totalANnz" is used before its value is set
+  
+E:/Alejandro/Uni/4║/Advanced Graphics/GitRepository/AppliedGPUProgramming/AppliedGPUAssignments/Final Project/Final Project/finalproject.cu(130): warning : variable "dCsrRowPtrA" is used before its value is set
+  
+E:/Alejandro/Uni/4║/Advanced Graphics/GitRepository/AppliedGPUProgramming/AppliedGPUAssignments/Final Project/Final Project/finalproject.cu(130): warning : variable "dCsrColIndA" is used before its value is set
+  
+E:/Alejandro/Uni/4║/Advanced Graphics/GitRepository/AppliedGPUProgramming/AppliedGPUAssignments/Final Project/Final Project/finalproject.cu(130): warning : variable "dCsrValA" is used before its value is set
+  
+  finalproject.cu
+E:/Alejandro/Uni/4º/Advanced Graphics/GitRepository/AppliedGPUProgramming/AppliedGPUAssignments/Final Project/Final Project/finalproject.cu(49): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+E:\Alejandro\Uni\4º\Advanced Graphics\GitRepository\AppliedGPUProgramming\AppliedGPUAssignments\Final Project\Final Project\finalproject.cu(130): warning C4700: uninitialized local variable 'dCsrValA' used
+E:\Alejandro\Uni\4º\Advanced Graphics\GitRepository\AppliedGPUProgramming\AppliedGPUAssignments\Final Project\Final Project\finalproject.cu(130): warning C4700: uninitialized local variable 'dCsrColIndA' used
+E:\Alejandro\Uni\4º\Advanced Graphics\GitRepository\AppliedGPUProgramming\AppliedGPUAssignments\Final Project\Final Project\finalproject.cu(130): warning C4700: uninitialized local variable 'dCsrRowPtrA' used
+E:\Alejandro\Uni\4º\Advanced Graphics\GitRepository\AppliedGPUProgramming\AppliedGPUAssignments\Final Project\Final Project\finalproject.cu(130): warning C4700: uninitialized local variable 'totalANnz' used
+     Creating library E:\Alejandro\Uni\4º\Advanced Graphics\GitRepository\AppliedGPUProgramming\AppliedGPUAssignments\Final Project\Final Project\x64\Debug\Final Project.lib and object E:\Alejandro\Uni\4º\Advanced Graphics\GitRepository\AppliedGPUProgramming\AppliedGPUAssignments\Final Project\Final Project\x64\Debug\Final Project.exp
+finalproject.cu.obj : error LNK2019: unresolved external symbol cusparseCreate referenced in function main
+finalproject.cu.obj : error LNK2019: unresolved external symbol cusparseDestroy referenced in function main
+finalproject.cu.obj : error LNK2019: unresolved external symbol cusparseDestroySpMat referenced in function main
+finalproject.cu.obj : error LNK2019: unresolved external symbol cusparseCreateCsr referenced in function main
+finalproject.cu.obj : error LNK2019: unresolved external symbol cusparseCreateDnMat referenced in function main
+finalproject.cu.obj : error LNK2019: unresolved external symbol cusparseSpMM referenced in function main
+finalproject.cu.obj : error LNK2019: unresolved external symbol cusparseSpMM_bufferSize referenced in function main
+E:\Alejandro\Uni\4º\Advanced Graphics\GitRepository\AppliedGPUProgramming\AppliedGPUAssignments\Final Project\Final Project\x64\Debug\Final Project.exe : fatal error LNK1120: 7 unresolved externals
