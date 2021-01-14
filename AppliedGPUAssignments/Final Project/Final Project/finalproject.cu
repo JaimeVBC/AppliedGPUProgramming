@@ -177,7 +177,7 @@ int main(int argc, char** argv)
     float alpha = 1.0f; // Scalar Alpha
     float beta = 0.0f; // Scalar Beta
 
-    float tol = 0.001;
+    float tol = 0.1;
 
     cusparseHandle_t handle = NULL;
     cusparseMatDescr_t Adescr = NULL; // Generic descriptor of dense matrix A
@@ -210,7 +210,7 @@ int main(int argc, char** argv)
     print_partial_matrix(B, N, M, 10, 10);
 
     //Perform CPU mult of A and B
-    multiply(A,M,M,B,M,M,C_check);
+    multiply(B,M,M,A,M,M,C_check);
 
     // Allocate device memory for the dense form of the matrices A, B, C and the vector containing the number of non-zero elements per row of matrix A
     CHECK_CUDA(cudaMalloc((void**)&dA, sizeof(float) * M * N));
