@@ -1,14 +1,13 @@
 #pragma once
 
 
-#define CHECK(call)                                                            \
+#define CHECK_CUDA(func)                                                       \
 {                                                                              \
-    const cudaError_t error = call;                                            \
-    if (error != cudaSuccess)                                                  \
-    {                                                                          \
-        fprintf(stderr, "Error: %s:%d, ", __FILE__, __LINE__);                 \
-        fprintf(stderr, "code: %d, reason: %s\n", error,                       \
-                cudaGetErrorString(error));                                    \
+    cudaError_t status = (func);                                               \
+    if (status != cudaSuccess) {                                               \
+        printf("CUDA API failed at line %d with error: %s (%d)\n",             \
+               __LINE__, cudaGetErrorString(status), status);                  \
+        return EXIT_FAILURE;                                                   \
     }                                                                          \
 }
 
@@ -45,18 +44,12 @@
     }                                                                          \
 }
 
-#define CHECK_CUSPARSE(call)                                                   \
+#define CHECK_CUSPARSE(func)                                                   \
 {                                                                              \
-    cusparseStatus_t err;                                                      \
-    if ((err = (call)) != CUSPARSE_STATUS_SUCCESS)                             \
-    {                                                                          \
-        fprintf(stderr, "Got error %d at %s:%d\n", err, __FILE__, __LINE__);   \
-        cudaError_t cuda_err = cudaGetLastError();                             \
-        if (cuda_err != cudaSuccess)                                           \
-        {                                                                      \
-            fprintf(stderr, "  CUDA error \"%s\" also detected\n",             \
-                    cudaGetErrorString(cuda_err));                             \
-        }                                                                      \
-        exit(1);                                                               \
+    cusparseStatus_t status = (func);                                          \
+    if (status != CUSPARSE_STATUS_SUCCESS) {                                   \
+        printf("CUSPARSE API failed at line %d with error: %s (%d)\n",         \
+               __LINE__, cusparseGetErrorString(status), status);              \
+        return EXIT_FAILURE;                                                   \
     }                                                                          \
 }
