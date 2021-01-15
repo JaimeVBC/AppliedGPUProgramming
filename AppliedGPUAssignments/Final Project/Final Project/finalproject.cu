@@ -12,7 +12,7 @@
  * sparse matrix-vector multiplication on randomly generated data.
  */
 
- /*
+ /* In this project, we only contemplated square matrices, so M has to be equal to N for now.
   * M = # of rows
   * N = # of columns
   */
@@ -70,7 +70,8 @@ void multiply(float* a, int row1, int col1, float* b, int row2, int col2, float 
 
 /*
  * Generate random dense matrix A in column-major order, while rounding some
- * elements down to zero to ensure it is sparse.
+ * elements down to zero to ensure it is sparse with the percentage
+ * of nnz elements desired, in this case
  */
 int generate_random_dense_matrix(int M, int N, float** outA)
 {
@@ -108,8 +109,9 @@ int generate_random_dense_matrix(int M, int N, float** outA)
 }
 
 /*
- * Generate random dense matrix A in column-major order, while rounding some
- * elements down to zero to ensure it is sparse.
+ * Generate random sparse matrix A in column-major order, while rounding some
+ * elements down to zero to ensure it is sparse with the percentage
+ * of nnz elements desired.
  */
 int generate_random_sparse_matrix(int M, int N, float** outA)
 {
@@ -146,6 +148,7 @@ int generate_random_sparse_matrix(int M, int N, float** outA)
     return totalNnz;
 }
 
+// Printing of the upper-left corner of the matrix
 void print_partial_matrix(float* M, int nrows, int ncols, int max_row,
     int max_col)
 {
@@ -164,6 +167,7 @@ void print_partial_matrix(float* M, int nrows, int ncols, int max_row,
 
 int main(int argc, char** argv)
 {
+    // Declaration of the array that will contain matrices values
     float* A, * dA;
     float* B, * dB;
     float* C, * dC, *C_check;
@@ -177,7 +181,7 @@ int main(int argc, char** argv)
     float alpha = 1.0f; // Scalar Alpha
     float beta = 0.0f; // Scalar Beta
 
-    float tol = 0.1;
+    float tol = 0.1; // Tolerance value applied to check that host and device calculations are more or less the same
 
     cusparseHandle_t handle = NULL;
     cusparseMatDescr_t Adescr = NULL; // Generic descriptor of dense matrix A
@@ -224,16 +228,7 @@ int main(int argc, char** argv)
     CHECK_CUSPARSE(cusparseSetMatType((cusparseMatDescr_t)Adescr, CUSPARSE_MATRIX_TYPE_GENERAL)); // redundant because it's the default value
     CHECK_CUSPARSE(cusparseSetMatIndexBase((cusparseMatDescr_t)Adescr, CUSPARSE_INDEX_BASE_ZERO)); // redundant because it's the default value*/
     
-    // Construct a descriptor of the dense matrix B
-    /*CHECK_CUSPARSE(cusparseCreateMatDescr( &Bdescr));
-    CHECK_CUSPARSE(cusparseSetMatType( Bdescr, CUSPARSE_MATRIX_TYPE_GENERAL)); // redundant because it's the default value
-    CHECK_CUSPARSE(cusparseSetMatIndexBase( Bdescr, CUSPARSE_INDEX_BASE_ZERO)); // redundant because it's the default value
 
-    // Construct a descriptor of the dense matrix C
-    CHECK_CUSPARSE(cusparseCreateMatDescr( &Cdescr));
-    CHECK_CUSPARSE(cusparseSetMatType( Cdescr, CUSPARSE_MATRIX_TYPE_GENERAL)); // redundant because it's the default value
-    CHECK_CUSPARSE(cusparseSetMatIndexBase( Cdescr, CUSPARSE_INDEX_BASE_ZERO)); // redundant because it's the default value
-    */
 
     // Transfer the dense matrixes A, B and C to the device
     CHECK_CUDA(cudaMemcpy(dA, A, sizeof(float) * M * N, cudaMemcpyHostToDevice));
@@ -254,6 +249,7 @@ int main(int argc, char** argv)
     CHECK_CUSPARSE(cusparseSnnz(handle, CUSPARSE_DIRECTION_ROW, M, N, Adescr,
         dA, M, dANnzPerRow, &totalANnz));
 
+    // Check that cusparseSnnz function has counted correctly the number of non-zero elements of A
     if (totalANnz != trueANnz)
     {
         fprintf(stderr, "Difference detected between cuSPARSE NNZ and true "
@@ -284,7 +280,6 @@ int main(int argc, char** argv)
     //Get the buffer size for the workspace
     CHECK_CUSPARSE(cusparseSpMM_bufferSize(handle, CUSPARSE_OPERATION_NON_TRANSPOSE, CUSPARSE_OPERATION_NON_TRANSPOSE,
         &alpha,  ASpdescr, (cusparseDnMatDescr_t)Bdescr, &beta, (cusparseDnMatDescr_t)Cdescr, CUDA_R_32F, CUSPARSE_SPMM_CSR_ALG1, &buffersize));
-
     
     // Perform matrix-matrix multiplication with the CSR-formatted matrix A
     CHECK_CUSPARSE(cusparseSpMM(handle, CUSPARSE_OPERATION_NON_TRANSPOSE, CUSPARSE_OPERATION_NON_TRANSPOSE,
@@ -293,6 +288,8 @@ int main(int argc, char** argv)
     // Copy the result vector back to the host
     CHECK_CUDA(cudaMemcpy(C, dC, sizeof(float) * M * M, cudaMemcpyDeviceToHost));
 
+
+    // We partially print both C (GPU) and C_check (CPU) and check that they are the same except for a tolerance difference
     printf("C:\n");
     print_partial_matrix(C, M, M, 10, 10);
 
@@ -310,10 +307,13 @@ int main(int argc, char** argv)
     if (check){ printf("CPU and GPU solutions ARE the same");  }
     else      { printf("CPU and GPU solutions ARE NOT the same");  }
 
+
+    // Free host resources
     free(A);
     free(B);
     free(C);
 
+    // Free device resources
     CHECK_CUDA(cudaFree(dA));
     CHECK_CUDA(cudaFree(dB));
     CHECK_CUDA(cudaFree(dC));
